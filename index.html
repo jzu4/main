@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أداة تغيير ألوان الصور | Color Replacer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+        
+        * {
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background-color: #111827;
+            color: #f3f4f6;
+            transition: background-color 0.3s ease;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: #1f2937;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid #374151;
+            background: #111827;
+            color: #f3f4f6;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input[type="number"]:focus {
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        .color-preview {
+            width: 48px;
+            height: 48px;
+            border-radius: 0.5rem;
+            border: 2px solid #4b5563;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .color-preview:hover {
+            transform: scale(1.05);
+            border-color: #60a5fa;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+
+        .btn-secondary {
+            background-color: #4b5563;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #374151;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .btn-success {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #059669;
+        }
+
+        .btn-warning {
+            background-color: #f59e0b;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background-color: #d97706;
+        }
+
+        .slider {
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            background: #374151;
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            border: 2px solid white;
+            transition: background 0.2s ease, transform 0.1s ease;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            background: #2563eb;
+        }
+
+        .eyedropper-active {
+            cursor: crosshair !important;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            min-width: 120px;
+            background-color: #1f2937;
+            color: #f3f4f6;
+            text-align: center;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            position: absolute;
+            z-index: 1;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            border: 1px solid #374151;
+            font-size: 0.875rem;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #1f2937 transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 600px;
+            border-radius: 0.5rem;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+
+        .drop-zone {
+            border: 2px dashed #4b5563;
+            border-radius: 1rem;
+            background-color: rgba(31, 41, 55, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone:hover, .drop-zone.active {
+            border-color: #3b82f6;
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            padding: 0;
+            width: 48px;
+            height: 48px;
+            cursor: pointer;
+            background: none;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: #3b82f6;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            backdrop-filter: blur(5px);
+        }
+
+        .loading-container {
+            text-align: center;
+            background-color: #1f2937;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            max-width: 80%;
+        }
+
+        .section {
+            background-color: #1f2937;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #f3f4f6;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Resetting animation and fixing memory leak issues */
+        canvas, img {
+            image-rendering: optimizeQuality;
+        }
+        
+        /* Responsive design improvements */
+        @media (max-width: 768px) {
+            .color-preview {
+                width: 40px;
+                height: 40px;
+            }
+            
+            input[type="color"] {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4">
+    <div class="container py-6">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold mb-2">أداة تغيير ألوان الصور</h1>
+            <p class="text-gray-400">غيّر لون محدد في الصورة إلى لون آخر بسهولة</p>
+        </header>
+
+        <div class="card p-6">
+            <!-- منطقة التحميل -->
+            <div id="uploadSection" class="section">
+                <h2 class="section-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    اختيار الصورة
+                </h2>
+                <div id="dropZone" class="drop-zone p-8 mb-4 flex flex-col items-center justify-center cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <div class="text-center">
+                        <p class="text-lg font-medium mb-1">اسحب واترك الصورة هنا</p>
+                        <p class="text-sm text-gray-400 mb-4">أو انقر لاختيار ملف</p>
+                        <button id="selectFileBtn" class="btn btn-primary">اختر صورة</button>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/*" class="hidden">
+                </div>
+            </div>
+
+            <div id="editorContainer" class="hidden">
+                <!-- أدوات التحرير -->
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <!-- اللون المراد تغييره -->
+                    <div class="section">
+                        <h2 class="section-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                            </svg>
+                            اللون المراد تغييره
+                        </h2>
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="tooltip">
+                                <div id="oldColorPreview" class="color-preview"></div>
+                                <span class="tooltiptext" id="oldColorHex">#000000</span>
+                            </div>
+                            <input type="color" id="oldColorPicker" value="#000000">
+                            <button id="pickColorBtn" class="btn btn-primary flex-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                </svg>
+                                استخدم القطارة
+                            </button>
+                        </div>
+                        <div class="grid gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-gray-300">أحمر (R)</label>
+                                <input type="number" id="oldRed" min="0" max="255" value="0" class="focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-gray-300">أخضر (G)</label>
+                                <input type="number" id="oldGreen" min="0" max="255" value="0" class="focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-gray-300">أزرق (B)</label>
+                                <input type="number" id="oldBlue" min="0" max="255" value="0" class="focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- اللون الجديد -->
+                    <div class="section">
+                        <h2 class="section-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                            </svg>
+                            اللون الجديد
+                        </h2>
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="tooltip">
+                                <div id="newColorPreview" class="color-preview"></div>
+                                <span class="tooltiptext" id="newColorHex">#000000</span>
+                            </div>
+                            <input type="color" id="newColorPicker" value="#000000">
+                            <button id="randomColorBtn" class="btn btn-secondary flex-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                                </svg>
+                                لون عشوائي
+                            </button>
+                        </div>
+                        <div class="grid gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-gray-300">أحمر (R)</label>
+                                <input type="number" id="newRed" min="0" max="255" value="0" class="focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-gray-300">أخضر (G)</label>
+                                <input type="number" id="newGreen" min="0" max="255" value="0" class="focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-gray-300">أزرق (B)</label>
+                                <input type="number" id="newBlue" min="0" max="255" value="0" class="focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- حساسية التغيير -->
+                <div class="section">
+                    <h2 class="section-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        إعدادات التغيير
+                    </h2>
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-sm font-medium text-gray-300">دقة تحديد اللون:</label>
+                            <span id="toleranceValueDisplay" class="text-lg font-semibold text-blue-400">15%</span>
+                        </div>
+                        <input type="range" id="toleranceSlider" class="slider" min="1" max="100" value="15">
+                        <div class="flex justify-between text-gray-400 text-sm mt-1">
+                            <span>دقة عالية (لون محدد فقط)</span>
+                            <span>نطاق واسع (ألوان متشابهة)</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-6">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="block text-sm font-medium text-gray-300">نعومة الحواف:</label>
+                                <span id="smoothnessValueDisplay" class="text-lg font-semibold text-blue-400">0%</span>
+                            </div>
+                            <input type="range" id="smoothnessSlider" class="slider" min="0" max="100" value="0">
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="block text-sm font-medium text-gray-300">شفافية اللون الجديد:</label>
+                                <span id="opacityValueDisplay" class="text-lg font-semibold text-blue-400">100%</span>
+                            </div>
+                            <input type="range" id="opacitySlider" class="slider" min="0" max="100" value="100">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- أزرار التحكم -->
+                <div class="flex flex-wrap justify-center gap-3 mb-6">
+                    <button id="resetBtn" class="btn btn-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        إعادة ضبط
+                    </button>
+                    <button id="undoBtn" class="btn btn-warning" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        تراجع
+                    </button>
+                    <button id="applyBtn" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        تطبيق التغييرات
+                    </button>
+                    <button id="downloadBtn" class="btn btn-success">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        تحميل الصورة
+                    </button>
+                    <button id="newImageBtn" class="btn btn-danger">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        صورة جديدة
+                    </button>
+                </div>
+
+                <!-- معاينة الصورة -->
+                <div id="previewSection" class="section">
+                    <h2 class="section-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        معاينة الصورة
+                    </h2>
+                    <div id="imagePreview" class="flex justify-center items-center p-4 bg-gray-800 rounded-lg overflow-hidden"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-8 text-center text-gray-500 text-sm">
+            <p>تم تصميم الأداة لتسهيل تغيير الألوان في الصور بدون الحاجة لبرامج معقدة</p>
+        </footer>
+    </div>
+
+    <!-- مؤشر التحميل -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-container">
+            <div class="loading-spinner mx-auto mb-4"></div>
+            <p id="loadingMessage">جاري معالجة الصورة...</p>
+        </div>
+    </div>
+
+    <script>
+        // المتغيرات العامة
+        let originalImage = null;
+        let currentImage = null;
+        let imageHistory = [];
+        let isPickingColor = false;
+        let processingImage = false;
+        let workerTimeout = null;
+        
+        // القماش للمعالجة
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        
+        // عناصر واجهة المستخدم
+        const fileInput = document.getElementById('fileInput');
+        const dropZone = document.getElementById('dropZone');
+        const selectFileBtn = document.getElementById('selectFileBtn');
+        const uploadSection = document.getElementById('uploadSection');
+        const editorContainer = document.getElementById('editorContainer');
+        const previewSection = document.getElementById('previewSection');
+        const imagePreview = document.getElementById('imagePreview');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingMessage = document.getElementById('loadingMessage');
+        
+        const oldColorPreview = document.getElementById('oldColorPreview');
+        const newColorPreview = document.getElementById('newColorPreview');
+        const oldColorPicker = document.getElementById('oldColorPicker');
+        const newColorPicker = document.getElementById('newColorPicker');
+        const oldRed = document.getElementById('oldRed');
+        const oldGreen = document.getElementById('oldGreen');
+        const oldBlue = document.getElementById('oldBlue');
+        const newRed = document.getElementById('newRed');
+        const newGreen = document.getElementById('newGreen');
+        const newBlue = document.getElementById('newBlue');
+        
+        const toleranceSlider = document.getElementById('toleranceSlider');
+        const toleranceValueDisplay = document.getElementById('toleranceValueDisplay');
+        const smoothnessSlider = document.getElementById('smoothnessSlider');
+        const smoothnessValueDisplay = document.getElementById('smoothnessValueDisplay');
+        const opacitySlider = document.getElementById('opacitySlider');
+        const opacityValueDisplay = document.getElementById('opacityValueDisplay');
+        
+        const resetBtn = document.getElementById('resetBtn');
+        const undoBtn = document.getElementById('undoBtn');
+        const applyBtn = document.getElementById('applyBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const newImageBtn = document.getElementById('newImageBtn');
+        const pickColorBtn = document.getElementById('pickColorBtn');
+        const randomColorBtn = document.getElementById('randomColorBtn');
+        
+        // تهيئة التطبيق
+        function initApp() {
+            // تفعيل وظائف السحب والإفلات
+            setupDropZone();
+            
+            // تفعيل منتقيات الألوان
+            setupColorPickers();
+            
+            // تفعيل المزلقات
+            setupSliders();
+            
+            // تفعيل الأزرار
+            setupButtons();
+            
+            // تفعيل مدخلات الألوان الرقمية
+            setupColorInputs();
+            
+            // تحديث معاينة الألوان مبدئياً
+            updateColorPreviews();
+        }
+        
+        // إعداد منطقة السحب والإفلات
+        function setupDropZone() {
+            // فتح مستعرض الملفات عند النقر على الزر
+            selectFileBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // معالجة الملف المختار
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            // معالجة سحب وإفلات الملفات
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('active');
+            });
+            
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('active');
+            });
+            
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('active');
+                
+                if (e.dataTransfer.files.length) {
+                    handleFileSelect({ target: { files: e.dataTransfer.files } });
+                }
+            });
+        }
+        
+        // إعداد منتقيات الألوان
+        function setupColorPickers() {
+            // منتقي اللون الأصلي
+            oldColorPicker.addEventListener('input', () => {
+                const hexColor = oldColorPicker.value;
+                const rgb = hexToRgb(hexColor);
+                oldRed.value = rgb.r;
+                oldGreen.value = rgb.g;
+                oldBlue.value = rgb.b;
+                updateColorPreviews();
+                processImageDebounced();
+            });
+            
+            // منتقي اللون الجديد
+            newColorPicker.addEventListener('input', () => {
+                const hexColor = newColorPicker.value;
+                const rgb = hexToRgb(hexColor);
+                newRed.value = rgb.r;
+                newGreen.value = rgb.g;
+                newBlue.value = rgb.b;
+                updateColorPreviews();
+                processImageDebounced();
+            });
+            
+            // النقر على معاينة اللون الأصلي
+            oldColorPreview.addEventListener('click', () => {
+                oldColorPicker.click();
+            });
+            
+            // النقر على معاينة اللون الجديد
+            newColorPreview.addEventListener('click', () => {
+                newColorPicker.click();
+            });
+        }
+        
+        // إعداد مدخلات الألوان الرقمية
+        function setupColorInputs() {
+            [oldRed, oldGreen, oldBlue, newRed, newGreen, newBlue].forEach(input => {
+                input.addEventListener('input', () => {
+                    // التحقق من صحة القيمة
+                    let value = parseInt(input.value);
+                    if (isNaN(value)) value = 0;
+                    value = Math.max(0, Math.min(255, value));
+                    input.value = value;
+                    
+                    updateColorPreviews();
+                    processImageDebounced();
+                });
+            });
+        }
+        
+        // إعداد المزلقات
+        function setupSliders() {
+            // مزلق دقة تحديد اللون
+            toleranceSlider.addEventListener('input', () => {
+                toleranceValueDisplay.textContent = toleranceSlider.value + '%';
+                processImageDebounced();
+            });
+            
+            // مزلق نعومة الحواف
+            smoothnessSlider.addEventListener('input', () => {
+                smoothnessValueDisplay.textContent = smoothnessSlider.value + '%';
+                processImageDebounced();
+            });
+            
+            // مزلق الشفافية
+            opacitySlider.addEventListener('input', () => {
+                opacityValueDisplay.textContent = opacitySlider.value + '%';
+                processImageDebounced();
+            });
+        }
+        
+        // إعداد الأزرار
+        function setupButtons() {
+            // زر القطارة
+            pickColorBtn.addEventListener('click', toggleEyedropper);
+            
+            // زر اللون العشوائي
+            randomColorBtn.addEventListener('click', () => {
+                const randomColor = {
+                    r: Math.floor(Math.random() * 256),
+                    g: Math.floor(Math.random() * 256),
+                    b: Math.floor(Math.random() * 256)
+                };
+                
+                newRed.value = randomColor.r;
+                newGreen.value = randomColor.g;
+                newBlue.value = randomColor.b;
+                
+                updateColorPreviews();
+                processImageDebounced();
+            });
+            
+            // زر إعادة الضبط
+            resetBtn.addEventListener('click', resetToOriginal);
+            
+            // زر التراجع
+            undoBtn.addEventListener('click', undoLastAction);
+            
+            // زر التطبيق
+            applyBtn.addEventListener('click', () => {
+                saveToHistory();
+                processImage();
+            });
+            
+            // زر التحميل
+            downloadBtn.addEventListener('click', downloadImage);
+            
+            // زر صورة جديدة
+            newImageBtn.addEventListener('click', () => {
+                editorContainer.classList.add('hidden');
+                uploadSection.classList.remove('hidden');
+                fileInput.value = '';
+            });
+        }
+        
+        // معالجة اختيار ملف جديد
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file || !file.type.match('image.*')) {
+                alert('يرجى اختيار ملف صورة صالح');
+                return;
+            }
+            
+            showLoading('جاري تحميل الصورة...');
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                originalImage = new Image();
+                originalImage.onload = function() {
+                    // عرض محرر الصورة
+                    uploadSection.classList.add('hidden');
+                    editorContainer.classList.remove('hidden');
+                    
+                    // تهيئة الصورة الحالية
+                    currentImage = originalImage;
+                    
+                    // إعادة ضبط تاريخ التغييرات
+                    imageHistory = [];
+                    undoBtn.disabled = true;
+                    
+                    // معالجة الصورة
+                    updateImagePreview();
+                    
+                    // إخفاء التحميل
+                    hideLoading();
+                };
+                originalImage.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // تبديل وضع القطارة
+        function toggleEyedropper() {
+            if (!currentImage) return;
+            
+            isPickingColor = !isPickingColor;
+            
+            if (isPickingColor) {
+                imagePreview.classList.add('eyedropper-active');
+                pickColorBtn.textContent = 'إلغاء القطارة';
+                pickColorBtn.classList.replace('btn-primary', 'btn-danger');
+            } else {
+                imagePreview.classList.remove('eyedropper-active');
+                pickColorBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                    </svg>
+                    استخدم القطارة
+                `;
+                pickColorBtn.classList.replace('btn-danger', 'btn-primary');
+            }
+        }
+        
+        // معالجة النقر على الصورة (لاستخدام القطارة)
+        function handleImageClick(event) {
+            if (!isPickingColor) return;
+            
+            const rect = event.target.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            // تحويل الإحداثيات إلى مقياس الصورة الأصلي
+            const scaleX = originalImage.width / event.target.width;
+            const scaleY = originalImage.height / event.target.height;
+            
+            const actualX = Math.floor(x * scaleX);
+            const actualY = Math.floor(y * scaleY);
+            
+            // رسم الصورة الأصلية على القماش للحصول على اللون الأصلي
+            canvas.width = originalImage.width;
+            canvas.height = originalImage.height;
+            ctx.drawImage(originalImage, 0, 0);
+            
+            // الحصول على لون البكسل
+            const imageData = ctx.getImageData(actualX, actualY, 1, 1).data;
+            
+            // تعيين القيم في الحقول
+            oldRed.value = imageData[0];
+            oldGreen.value = imageData[1];
+            oldBlue.value = imageData[2];
+            
+            // تحديث معاينة الألوان ومعالجة الصورة
+            updateColorPreviews();
+            processImage();
+            
+            // إيقاف وضع القطارة
+            isPickingColor = false;
+            imagePreview.classList.remove('eyedropper-active');
+            pickColorBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                </svg>
+                استخدم القطارة
+            `;
+            pickColorBtn.classList.replace('btn-danger', 'btn-primary');
+        }
+        
+        // تحديث معاينة الألوان
+        function updateColorPreviews() {
+            const oldColor = `rgb(${oldRed.value}, ${oldGreen.value}, ${oldBlue.value})`;
+            const newColor = `rgb(${newRed.value}, ${newGreen.value}, ${newBlue.value})`;
+            
+            oldColorPreview.style.backgroundColor = oldColor;
+            newColorPreview.style.backgroundColor = newColor;
+            
+            // تحديث قيم Hex
+            const oldHex = rgbToHex(parseInt(oldRed.value), parseInt(oldGreen.value), parseInt(oldBlue.value));
+            const newHex = rgbToHex(parseInt(newRed.value), parseInt(newGreen.value), parseInt(newBlue.value));
+            
+            document.getElementById('oldColorHex').textContent = oldHex;
+            document.getElementById('newColorHex').textContent = newHex;
+            
+            // تحديث منتقي الألوان
+            oldColorPicker.value = oldHex;
+            newColorPicker.value = newHex;
+        }
+        
+        // تحديث معاينة الصورة
+        function updateImagePreview() {
+            // تأكد من وجود صورة
+            if (!currentImage) return;
+            
+            // رسم الصورة على القماش
+            canvas.width = currentImage.width;
+            canvas.height = currentImage.height;
+            ctx.drawImage(currentImage, 0, 0);
+            
+            // عرض الصورة
+            const dataURL = canvas.toDataURL();
+            imagePreview.innerHTML = `
+                <img src="${dataURL}" class="preview-image" onclick="handleImageClick(event)">
+            `;
+        }
+        
+        // معالجة الصورة بتأخير (لتجنب استدعاء متكرر للمعالجة)
+        function processImageDebounced() {
+            if (workerTimeout) {
+                clearTimeout(workerTimeout);
+            }
+            
+            workerTimeout = setTimeout(() => {
+                processImage();
+            }, 300);
+        }
+        
+        // معالجة الصورة
+        function processImage() {
+            if (!currentImage || processingImage) return;
+            
+            processingImage = true;
+            showLoading('جاري معالجة الصورة...');
+            
+            // تنفيذ المعالجة بعد وقت قصير للسماح بتحديث واجهة المستخدم
+            setTimeout(() => {
+                try {
+                    // تهيئة القماش
+                    canvas.width = currentImage.width;
+                    canvas.height = currentImage.height;
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(currentImage, 0, 0);
+                    
+                    // الحصول على بيانات الصورة
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imageData.data;
+                    
+                    // الألوان
+                    const oldColor = {
+                        r: parseInt(oldRed.value) || 0,
+                        g: parseInt(oldGreen.value) || 0,
+                        b: parseInt(oldBlue.value) || 0
+                    };
+                    
+                    const newColor = {
+                        r: parseInt(newRed.value) || 0,
+                        g: parseInt(newGreen.value) || 0,
+                        b: parseInt(newBlue.value) || 0
+                    };
+                    
+                    // قيم المزلقات
+                    const tolerance = parseInt(toleranceSlider.value) / 100;
+                    const smoothness = parseInt(smoothnessSlider.value) / 100;
+                    const opacity = parseInt(opacitySlider.value) / 100;
+                    
+                    // معالجة كل بكسل
+                    for (let i = 0; i < data.length; i += 4) {
+                        // تجاهل البكسلات الشفافة تماماً
+                        if (data[i + 3] === 0) continue;
+                        
+                        // حساب تشابه اللون
+                        const similarity = getColorSimilarity(
+                            data[i], data[i + 1], data[i + 2],
+                            oldColor.r, oldColor.g, oldColor.b
+                        );
+                        
+                        // إذا كان اللون ضمن نطاق التشابه المطلوب
+                        if (similarity <= tolerance) {
+                            // حساب معامل المزج بناءً على مدى التشابه والنعومة
+                            let blendFactor = 1 - (similarity / tolerance);
+                            
+                            // تطبيق النعومة
+                            if (smoothness > 0) {
+                                blendFactor = smoothstep(blendFactor, smoothness);
+                            }
+                            
+                            // تطبيق الشفافية
+                            blendFactor *= opacity;
+                            
+                            // تطبيق اللون الجديد
+                            data[i] = blend(data[i], newColor.r, blendFactor);
+                            data[i + 1] = blend(data[i + 1], newColor.g, blendFactor);
+                            data[i + 2] = blend(data[i + 2], newColor.b, blendFactor);
+                        }
+                    }
+                    
+                    // تطبيق التغييرات
+                    ctx.putImageData(imageData, 0, 0);
+                    
+                    // تحديث معاينة الصورة
+                    const dataURL = canvas.toDataURL();
+                    imagePreview.innerHTML = `
+                        <img src="${dataURL}" class="preview-image" onclick="handleImageClick(event)">
+                    `;
+                    
+                    // تحديث الصورة الحالية
+                    const newImage = new Image();
+                    newImage.onload = function() {
+                        currentImage = newImage;
+                        processingImage = false;
+                        hideLoading();
+                    };
+                    newImage.onerror = function() {
+                        processingImage = false;
+                        hideLoading();
+                        alert('حدث خطأ أثناء معالجة الصورة. يرجى المحاولة مرة أخرى.');
+                    };
+                    newImage.src = dataURL;
+                } catch (error) {
+                    console.error('Error processing image:', error);
+                    processingImage = false;
+                    hideLoading();
+                    alert('حدث خطأ أثناء معالجة الصورة. يرجى المحاولة مرة أخرى.');
+                }
+            }, 50);
+        }
+        
+        // حفظ الحالة الحالية في التاريخ
+        function saveToHistory() {
+            if (!currentImage) return;
+            
+            // حفظ الصورة الحالية
+            canvas.width = currentImage.width;
+            canvas.height = currentImage.height;
+            ctx.drawImage(currentImage, 0, 0);
+            
+            // إضافة الصورة إلى التاريخ
+            imageHistory.push(canvas.toDataURL());
+            
+            // تفعيل زر التراجع
+            undoBtn.disabled = false;
+        }
+        
+        // إعادة الضبط إلى الصورة الأصلية
+        function resetToOriginal() {
+            if (!originalImage) return;
+            
+            // حفظ الحالة الحالية في التاريخ
+            saveToHistory();
+            
+            // إعادة تعيين الصورة الحالية إلى الصورة الأصلية
+            currentImage = originalImage;
+            
+            // تحديث معاينة الصورة
+            updateImagePreview();
+        }
+        
+        // التراجع عن آخر تغيير
+        function undoLastAction() {
+            if (imageHistory.length === 0) return;
+            
+            // استرجاع آخر صورة من التاريخ
+            const lastImage = imageHistory.pop();
+            
+            // إعادة تحميل الصورة
+            const img = new Image();
+            img.onload = function() {
+                currentImage = img;
+                updateImagePreview();
+                
+                // تعطيل زر التراجع إذا كان التاريخ فارغاً
+                if (imageHistory.length === 0) {
+                    undoBtn.disabled = true;
+                }
+            };
+            img.src = lastImage;
+        }
+        
+        // تحميل الصورة
+        function downloadImage() {
+            if (!currentImage) return;
+            
+            // رسم الصورة الحالية على القماش
+            canvas.width = currentImage.width;
+            canvas.height = currentImage.height;
+            ctx.drawImage(currentImage, 0, 0);
+            
+            // إنشاء رابط تنزيل
+            const link = document.createElement('a');
+            link.download = 'edited-image.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // إظهار مؤشر التحميل
+        function showLoading(message = 'جاري التحميل...') {
+            loadingMessage.textContent = message;
+            loadingOverlay.classList.remove('hidden');
+        }
+        
+        // إخفاء مؤشر التحميل
+        function hideLoading() {
+            loadingOverlay.classList.add('hidden');
+        }
+        
+        // دالة لحساب درجة التشابه بين لونين (0 = متطابق تماماً، 1 = مختلف تماماً)
+        function getColorSimilarity(r1, g1, b1, r2, g2, b2) {
+            // استخدام مسافة اللون المرجحة (CIEDE2000 المبسطة)
+            const rMean = (r1 + r2) / 2;
+            const dr = r1 - r2;
+            const dg = g1 - g2;
+            const db = b1 - b2;
+            
+            // حساب المسافة المرجحة
+            const weightedDist = Math.sqrt(
+                (2 + rMean/256) * dr * dr + 
+                4 * dg * dg + 
+                (2 + (255-rMean)/256) * db * db
+            );
+            
+            // تحويل إلى قيمة بين 0 و 1
+            return Math.min(1, weightedDist / 765);
+        }
+        
+        // دالة smoothstep للحصول على انتقال أكثر نعومة
+        function smoothstep(x, amount) {
+            // استخدام دالة smoothstep للحصول على انتقال أكثر نعومة
+            const t = Math.max(0, Math.min(1, (x - amount) / (1 - amount)));
+            return t * t * (3 - 2 * t);
+        }
+        
+        // دالة لمزج لونين بنسبة معينة
+        function blend(color1, color2, factor) {
+            return Math.round(color1 * (1 - factor) + color2 * factor);
+        }
+        
+        // دالة لتحويل لون RGB إلى Hex
+        function rgbToHex(r, g, b) {
+            return "#" + 
+                ((1 << 24) + (r << 16) + (g << 8) + b)
+                .toString(16)
+                .slice(1);
+        }
+        
+        // دالة لتحويل لون Hex إلى RGB
+        function hexToRgb(hex) {
+            // إزالة الشباك إذا وجدت
+            hex = hex.replace(/^#/, '');
+            
+            // تحويل القيم
+            const bigint = parseInt(hex, 16);
+            const r = (bigint >> 16) & 255;
+            const g = (bigint >> 8) & 255;
+            const b = bigint & 255;
+            
+            return { r, g, b };
+        }
+        
+        // تهيئة التطبيق عند تحميل الصفحة
+        window.onload = initApp;
+        
+        // تعريف الدوال العامة التي تستخدم في HTML
+        window.handleImageClick = handleImageClick;
+    </script>
+</body>
+</html>

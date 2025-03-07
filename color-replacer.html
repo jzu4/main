@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أداة تغيير ألوان الصور | Color Replacer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap');
+        
+        * {
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --secondary-color: #1f2937;
+            --bg-color: #111827;
+            --text-color: #f3f4f6;
+            --border-color: #374151;
+            --card-color: #1e293b;
+            --accent-color: #8b5cf6;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            background-image: radial-gradient(circle at 25px 25px, rgba(128, 90, 213, 0.1) 2%, transparent 0%), radial-gradient(circle at 75px 75px, rgba(128, 90, 213, 0.1) 2%, transparent 0%);
+            background-size: 100px 100px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: var(--card-color);
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            background: var(--secondary-color);
+            color: var(--text-color);
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3);
+        }
+
+        .color-preview {
+            width: 50px;
+            height: 50px;
+            border-radius: 0.5rem;
+            border: 3px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .color-preview:hover {
+            transform: scale(1.1);
+            border-color: var(--primary-color);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:focus {
+            outline: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #2d3748;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #059669;
+            transform: translateY(-1px);
+        }
+
+        .eyedropper-active {
+            cursor: crosshair !important;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            min-width: 120px;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            text-align: center;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            position: absolute;
+            z-index: 1;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            font-size: 0.875rem;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 600px;
+            border-radius: 0.5rem;
+            object-fit: contain;
+            border: 2px solid var(--border-color);
+        }
+
+        .preview-image:hover {
+            border-color: var(--primary-color);
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 1rem;
+            background-color: rgba(31, 41, 55, 0.5);
+            transition: all 0.3s;
+        }
+
+        .drop-zone:hover, .drop-zone.active {
+            border-color: var(--primary-color);
+            background-color: rgba(79, 70, 229, 0.1);
+        }
+
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            padding: 0;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            background: none;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .section {
+            background-color: var(--card-color);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .twitter-btn {
+            background-color: #1DA1F2;
+        }
+
+        .twitter-btn:hover {
+            background-color: #0c85d0;
+            box-shadow: 0 4px 8px rgba(29, 161, 242, 0.4);
+        }
+
+        .telegram-btn {
+            background-color: #0088cc;
+        }
+
+        .telegram-btn:hover {
+            background-color: #0077b5;
+            box-shadow: 0 4px 8px rgba(0, 136, 204, 0.4);
+        }
+
+        .footer-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .footer-link:hover {
+            color: #a78bfa;
+            text-decoration: underline;
+        }
+        
+        .app-header {
+            position: relative;
+            padding: 1rem 0;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .app-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            border-radius: 2px;
+        }
+        
+        .app-title {
+            font-size: 2.25rem;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Responsive design improvements */
+        @media (max-width: 768px) {
+            .color-preview {
+                width: 40px;
+                height: 40px;
+            }
+            
+            input[type="color"] {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+            
+            .app-title {
+                font-size: 1.75rem;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4">
+    <div class="container py-6">
+        <!-- Header -->
+        <header class="app-header">
+            <h1 class="app-title">أداة تغيير ألوان الصور</h1>
+            <p class="text-gray-300">غيّر أي لون في الصورة بسهولة وبنقرة واحدة</p>
+        </header>
+
+        <div class="card p-6">
+            <!-- منطقة التحميل -->
+            <div id="uploadSection" class="section">
+                <h2 class="section-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    اختيار الصورة
+                </h2>
+                <div id="dropZone" class="drop-zone p-8 mb-4 flex flex-col items-center justify-center cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <div class="text-center">
+                        <p class="text-lg font-medium mb-1">اسحب واترك الصورة هنا</p>
+                        <p class="text-sm text-gray-400 mb-4">أو انقر لاختيار ملف</p>
+                        <button id="selectFileBtn" class="btn btn-primary">
+                            <i class="fas fa-image mr-2"></i>
+                            اختر صورة
+                        </button>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/*" class="hidden">
+                </div>
+            </div>
+
+            <div id="editorContainer" class="hidden">
+                <!-- أدوات التحرير -->
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <!-- اللون المراد تغييره -->
+                    <div class="section">
+                        <h2 class="section-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                            </svg>
+                            اللون المراد تغييره
+                        </h2>
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="tooltip">
+                                <div id="oldColorPreview" class="color-preview"></div>
+                                <span class="tooltiptext" id="oldColorHex">#000000</span>
+                            </div>
+                            <input type="color" id="oldColorPicker" value="#000000">
+                            <button id="pickColorBtn" class="btn btn-primary flex-1">
+                                <i class="fas fa-eye-dropper mr-2"></i>
+                                استخدم القطارة
+                            </button>
+                        </div>
+                        <div class="grid gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-gray-300">أحمر (R)</label>
+                                <input type="number" id="oldRed" min="0" max="255" value="0">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-gray-300">أخضر (G)</label>
+                                <input type="number" id="oldGreen" min="0" max="255" value="0">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-gray-300">أزرق (B)</label>
+                                <input type="number" id="oldBlue" min="0" max="255" value="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- اللون الجديد -->
+                    <div class="section">
+                        <h2 class="section-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                            </svg>
+                            اللون الجديد
+                        </h2>
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="tooltip">
+                                <div id="newColorPreview" class="color-preview"></div>
+                                <span class="tooltiptext" id="newColorHex">#000000</span>
+                            </div>
+                            <input type="color" id="newColorPicker" value="#000000">
+                            <button id="randomColorBtn" class="btn btn-secondary flex-1">
+                                <i class="fas fa-random mr-2"></i>
+                                لون عشوائي
+                            </button>
+                        </div>
+                        <div class="grid gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-gray-300">أحمر (R)</label>
+                                <input type="number" id="newRed" min="0" max="255" value="0">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-gray-300">أخضر (G)</label>
+                                <input type="number" id="newGreen" min="0" max="255" value="0">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-gray-300">أزرق (B)</label>
+                                <input type="number" id="newBlue" min="0" max="255" value="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- أزرار التحكم -->
+                <div class="flex flex-wrap justify-center gap-3 mb-6">
+                    <button id="resetBtn" class="btn btn-secondary">
+                        <i class="fas fa-undo mr-2"></i>
+                        إعادة ضبط
+                    </button>
+                    <button id="downloadBtn" class="btn btn-success">
+                        <i class="fas fa-download mr-2"></i>
+                        تحميل الصورة
+                    </button>
+                    <button id="newImageBtn" class="btn btn-danger">
+                        <i class="fas fa-plus mr-2"></i>
+                        صورة جديدة
+                    </button>
+                </div>
+
+                <!-- معاينة الصورة -->
+                <div id="previewSection" class="section">
+                    <h2 class="section-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        معاينة الصورة
+                    </h2>
+                    <div id="imagePreview" class="flex justify-center items-center p-4 bg-gray-800 rounded-lg overflow-hidden"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-8 text-center">
+            <div class="mb-4 flex justify-center space-x-4 rtl:space-x-reverse">
+                <a href="https://twitter.com/_juz4" target="_blank" class="social-btn twitter-btn">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a href="https://t.me/jz_u4" target="_blank" class="social-btn telegram-btn">
+                    <i class="fab fa-telegram-plane"></i>
+                </a>
+            </div>
+            <p class="text-gray-400 text-sm">
+                جميع الحقوق محفوظة للمطور 
+                <a href="https://twitter.com/_juz4" target="_blank" class="footer-link">Rives</a>
+                &copy; 2025
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // المتغيرات
+        let originalImage = null;
+        let currentImage = null;
+        let isPickingColor = false;
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // عناصر واجهة المستخدم
+        const fileInput = document.getElementById('fileInput');
+        const dropZone = document.getElementById('dropZone');
+        const selectFileBtn = document.getElementById('selectFileBtn');
+        const uploadSection = document.getElementById('uploadSection');
+        const editorContainer = document.getElementById('editorContainer');
+        const imagePreview = document.getElementById('imagePreview');
+        
+        const oldColorPreview = document.getElementById('oldColorPreview');
+        const newColorPreview = document.getElementById('newColorPreview');
+        const oldColorPicker = document.getElementById('oldColorPicker');
+        const newColorPicker = document.getElementById('newColorPicker');
+        const oldRed = document.getElementById('oldRed');
+        const oldGreen = document.getElementById('oldGreen');
+        const oldBlue = document.getElementById('oldBlue');
+        const newRed = document.getElementById('newRed');
+        const newGreen = document.getElementById('newGreen');
+        const newBlue = document.getElementById('newBlue');
+        
+        const resetBtn = document.getElementById('resetBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const newImageBtn = document.getElementById('newImageBtn');
+        const pickColorBtn = document.getElementById('pickColorBtn');
+        const randomColorBtn = document.getElementById('randomColorBtn');
+        
+        // تهيئة التطبيق
+        function initApp() {
+            // زر اختيار ملف
+            selectFileBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // معالجة اختيار ملف
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            // منطقة السحب والإفلات
+            setupDropZone();
+            
+            // زر القطارة
+            pickColorBtn.addEventListener('click', toggleEyedropper);
+            
+            // زر اللون العشوائي
+            randomColorBtn.addEventListener('click', createRandomColor);
+            
+            // منتقيات الألوان
+            oldColorPicker.addEventListener('input', updateOldColorFromPicker);
+            newColorPicker.addEventListener('input', updateNewColorFromPicker);
+            
+            // النقر على مربعات الألوان
+            oldColorPreview.addEventListener('click', () => oldColorPicker.click());
+            newColorPreview.addEventListener('click', () => newColorPicker.click());
+            
+            // مدخلات RGB
+            [oldRed, oldGreen, oldBlue, newRed, newGreen, newBlue].forEach(input => {
+                input.addEventListener('change', updateColorFromInputs);
+            });
+            
+            // أزرار التحكم
+            resetBtn.addEventListener('click', resetToOriginal);
+            downloadBtn.addEventListener('click', downloadImage);
+            newImageBtn.addEventListener('click', () => {
+                editorContainer.classList.add('hidden');
+                uploadSection.classList.remove('hidden');
+                fileInput.value = '';
+            });
+            
+            // تحديث معاينة الألوان مبدئياً
+            updateColorPreviews();
+        }
+        
+        // إعداد منطقة السحب والإفلات
+        function setupDropZone() {
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('active');
+            });
+            
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('active');
+            });
+            
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('active');
+                
+                if (e.dataTransfer.files.length) {
+                    handleFileSelect({ target: { files: e.dataTransfer.files } });
+                }
+            });
+        }
+        
+        // معالجة اختيار ملف
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file || !file.type.match('image.*')) {
+                alert('يرجى اختيار ملف صورة صالح');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                originalImage = new Image();
+                originalImage.onload = function() {
+                    // إظهار واجهة التحرير
+                    uploadSection.classList.add('hidden');
+                    editorContainer.classList.remove('hidden');
+                    
+                    // تهيئة الصورة الحالية
+                    currentImage = originalImage;
+                    
+                    // تحديث المعاينة
+                    updateImagePreview();
+                };
+                originalImage.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // تحديث معاينة الصورة
+        function updateImagePreview() {
+            if (!currentImage) return;
+            
+            // رسم الصورة على القماش
+            canvas.width = currentImage.width;
+            canvas.height = currentImage.height;
+            ctx.drawImage(currentImage, 0, 0);
+            
+            // عرض الصورة
+            imagePreview.innerHTML = `
+                <img src="${canvas.toDataURL()}" class="preview-image" onclick="handleImageClick(event)">
+            `;
+            
+            // معالجة الصورة بناءً على الإعدادات الحالية
+            processImage();
+        }
+        
+        // تبديل وضع القطارة
+        function toggleEyedropper() {
+            if (!currentImage) return;
+            
+            isPickingColor = !isPickingColor;
+            
+            if (isPickingColor) {
+                imagePreview.classList.add('eyedropper-active');
+                pickColorBtn.innerHTML = '<i class="fas fa-times mr-2"></i> إلغاء القطارة';
+                pickColorBtn.classList.replace('btn-primary', 'btn-danger');
+            } else {
+                imagePreview.classList.remove('eyedropper-active');
+                pickColorBtn.innerHTML = '<i class="fas fa-eye-dropper mr-2"></i> استخدم القطارة';
+                pickColorBtn.classList.replace('btn-danger', 'btn-primary');
+            }
+        }
+        
+        // معالجة النقر على الصورة (للقطارة)
+        function handleImageClick(event) {
+            if (!isPickingColor) return;
+            
+            const rect = event.target.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            // تحويل الإحداثيات إلى مقياس الصورة الأصلي
+            const scaleX = originalImage.width / event.target.width;
+            const scaleY = originalImage.height / event.target.height;
+            
+            const actualX = Math.floor(x * scaleX);
+            const actualY = Math.floor(y * scaleY);
+            
+            // استخدام الصورة الأصلية للحصول على اللون الحقيقي
+            canvas.width = originalImage.width;
+            canvas.height = originalImage.height;
+            ctx.drawImage(originalImage, 0, 0);
+            
+            // الحصول على لون البكسل
+            const imageData = ctx.getImageData(actualX, actualY, 1, 1).data;
+            
+            // تعيين القيم
+            oldRed.value = imageData[0];
+            oldGreen.value = imageData[1];
+            oldBlue.value = imageData[2];
+            
+            // تحديث معاينة الألوان ومعالجة الصورة
+            updateColorPreviews();
+            processImage();
+            
+            // إيقاف وضع القطارة
+            isPickingColor = false;
+            imagePreview.classList.remove('eyedropper-active');
+            pickColorBtn.innerHTML = '<i class="fas fa-eye-dropper mr-2"></i> استخدم القطارة';
+            pickColorBtn.classList.replace('btn-danger', 'btn-primary');
+        }
+        
+        // إنشاء لون عشوائي
+        function createRandomColor() {
+            const r = Math.floor(Math.random() * 256);
+            const g = Math.floor(Math.random() * 256);
+            const b = Math.floor(Math.random() * 256);
+            
+            newRed.value = r;
+            newGreen.value = g;
+            newBlue.value = b;
+            
+            updateColorPreviews();
+            processImage();
+        }
+        
+        // تحديث اللون من مدخلات RGB
+        function updateColorFromInputs() {
+            updateColorPreviews();
+            processImage();
+        }
+        
+        // تحديث اللون الأصلي من منتقي الألوان
+        function updateOldColorFromPicker() {
+            const rgb = hexToRgb(oldColorPicker.value);
+            oldRed.value = rgb.r;
+            oldGreen.value = rgb.g;
+            oldBlue.value = rgb.b;
+            updateColorPreviews();
+            processImage();
+        }
+        
+        // تحديث اللون الجديد من منتقي الألوان
+        function updateNewColorFromPicker() {
+            const rgb = hexToRgb(newColorPicker.value);
+            newRed.value = rgb.r;
+            newGreen.value = rgb.g;
+            newBlue.value = rgb.b;
+            updateColorPreviews();
+            processImage();
+        }
+        
+        // تحديث معاينة الألوان
+        function updateColorPreviews() {
+            // الحصول على القيم الحالية
+            const r1 = parseInt(oldRed.value) || 0;
+            const g1 = parseInt(oldGreen.value) || 0;
+            const b1 = parseInt(oldBlue.value) || 0;
+            
+            const r2 = parseInt(newRed.value) || 0;
+            const g2 = parseInt(newGreen.value) || 0;
+            const b2 = parseInt(newBlue.value) || 0;
+            
+            // تصحيح القيم خارج النطاق
+            const clamp = (val) => Math.max(0, Math.min(255, val));
+            
+            // تحديث الألوان
+            const oldColor = `rgb(${clamp(r1)}, ${clamp(g1)}, ${clamp(b1)})`;
+            const newColor = `rgb(${clamp(r2)}, ${clamp(g2)}, ${clamp(b2)})`;
+            
+            // تحديث مربعات الألوان
+            oldColorPreview.style.backgroundColor = oldColor;
+            newColorPreview.style.backgroundColor = newColor;
+            
+            // تحديث قيم Hex
+            const oldHex = rgbToHex(clamp(r1), clamp(g1), clamp(b1));
+            const newHex = rgbToHex(clamp(r2), clamp(g2), clamp(b2));
+            
+            document.getElementById('oldColorHex').textContent = oldHex;
+            document.getElementById('newColorHex').textContent = newHex;
+            
+            // تحديث منتقيات الألوان
+            oldColorPicker.value = oldHex;
+            newColorPicker.value = newHex;
+        }
+        
+        // معالجة الصورة
+        function processImage() {
+            if (!currentImage) return;
+            
+            // استخدام الصورة الأصلية كأساس
+            canvas.width = originalImage.width;
+            canvas.height = originalImage.height;
+            ctx.drawImage(originalImage, 0, 0);
+            
+            // الحصول على بيانات الصورة
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            
+            // الألوان
+            const oldColor = {
+                r: parseInt(oldRed.value) || 0,
+                g: parseInt(oldGreen.value) || 0,
+                b: parseInt(oldBlue.value) || 0
+            };
+            
+            const newColor = {
+                r: parseInt(newRed.value) || 0,
+                g: parseInt(newGreen.value) || 0,
+                b: parseInt(newBlue.value) || 0
+            };
+            
+            // تحديد دقة التطابق (تطابق دقيق فقط)
+            const exactMatch = true;
+            
+            // معالجة كل البكسلات
+            for (let i = 0; i < data.length; i += 4) {
+                // تجاهل البكسلات الشفافة
+                if (data[i + 3] === 0) continue;
+                
+                // إذا كان التطابق دقيقاً، نغير فقط اللون المطابق تماماً
+                if (exactMatch) {
+                    if (data[i] === oldColor.r && 
+                        data[i + 1] === oldColor.g && 
+                        data[i + 2] === oldColor.b) {
+                        data[i] = newColor.r;
+                        data[i + 1] = newColor.g;
+                        data[i + 2] = newColor.b;
+                    }
+                } else {
+                    // هذا الجزء لا يستخدم حالياً (تم إزالة خيار دقة التغيير)
+                    const similarity = getColorSimilarity(
+                        data[i], data[i + 1], data[i + 2],
+                        oldColor.r, oldColor.g, oldColor.b
+                    );
+                    
+                    const tolerance = 0.05; // قيمة دقة ثابتة منخفضة جداً
+                    if (similarity <= tolerance) {
+                        data[i] = newColor.r;
+                        data[i + 1] = newColor.g;
+                        data[i + 2] = newColor.b;
+                    }
+                }
+            }
+            
+            // تطبيق التغييرات وتحديث المعاينة
+            ctx.putImageData(imageData, 0, 0);
+            
+            // تحديث المعاينة
+            imagePreview.innerHTML = `
+                <img src="${canvas.toDataURL()}" class="preview-image" onclick="handleImageClick(event)">
+            `;
+        }
+        
+        // إعادة ضبط الصورة إلى الأصل
+        function resetToOriginal() {
+            if (!originalImage) return;
+            
+            // إعادة رسم الصورة الأصلية
+            canvas.width = originalImage.width;
+            canvas.height = originalImage.height;
+            ctx.drawImage(originalImage, 0, 0);
+            
+            // تحديث المعاينة
+            imagePreview.innerHTML = `
+                <img src="${canvas.toDataURL()}" class="preview-image" onclick="handleImageClick(event)">
+            `;
+            
+            // إعادة تعيين الصورة الحالية
+            currentImage = originalImage;
+        }
+        
+        // تحميل الصورة
+        function downloadImage() {
+            if (!currentImage) return;
+            
+            // إنشاء رابط تنزيل
+            const link = document.createElement('a');
+            link.download = 'edited-image.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // دالة لحساب مدى تشابه لونين (0 = متطابق، 1 = مختلف تماماً)
+        function getColorSimilarity(r1, g1, b1, r2, g2, b2) {
+            const rDiff = (r1 - r2) / 255;
+            const gDiff = (g1 - g2) / 255;
+            const bDiff = (b1 - b2) / 255;
+            
+            return Math.min(1, Math.sqrt(rDiff*rDiff + gDiff*gDiff + bDiff*bDiff) / Math.sqrt(3));
+        }
+        
+        // دالة لتحويل لون RGB إلى Hex
+        function rgbToHex(r, g, b) {
+            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        }
+        
+        // دالة لتحويل لون Hex إلى RGB
+        function hexToRgb(hex) {
+            // إزالة الشباك إذا وجدت
+            hex = hex.replace(/^#/, '');
+            
+            // تحويل القيم
+            const bigint = parseInt(hex, 16);
+            const r = (bigint >> 16) & 255;
+            const g = (bigint >> 8) & 255;
+            const b = bigint & 255;
+            
+            return { r, g, b };
+        }
+        
+        // تهيئة التطبيق عند تحميل الصفحة
+        window.onload = initApp;
+        
+        // تعريف الدوال العامة التي تستخدم في HTML
+        window.handleImageClick = handleImageClick;
+    </script>
+</body>
+</html>

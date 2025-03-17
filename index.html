@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --crt-glow: rgba(0, 255, 255, 0.3);
+        }
+
+        body {
+            margin: 0;
+            background: #000;
+            color: var(--crt-glow);
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .crt-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.8) 0px,
+                rgba(0, 0, 0, 0.8) 2px,
+                transparent 2px,
+                transparent 4px
+            );
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        #main-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 7vw;
+            text-align: center;
+            animation: text-glitch 5s infinite;
+            text-shadow: 0 0 10px var(--crt-glow);
+            width: 90%;
+            margin: auto;
+        }
+
+        .tv-glitch {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: 1s;
+            z-index: -1;
+        }
+
+        .tv-glitch.active {
+            opacity: 0.7;
+            animation: horizontal-glitch 0.3s infinite;
+        }
+
+        #contact-buttons {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 3;
+        }
+
+        .contact-btn {
+            background: transparent;
+            border: 2px solid var(--crt-glow);
+            color: var(--crt-glow);
+            padding: 12px 25px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 15px var(--crt-glow);
+        }
+
+        .contact-btn:hover {
+            background: var(--crt-glow);
+            color: #000;
+        }
+
+        @keyframes text-glitch {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            95% { transform: translate(-50%, -50%) scale(1); }
+            96% { transform: translate(-51%, -49%) scale(1.02); }
+            97% { transform: translate(-49%, -51%) scale(0.98); }
+            98% { transform: translate(-50%, -50%) scale(1.01); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        @keyframes horizontal-glitch {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-5px); }
+            40% { transform: translateX(3px); }
+            60% { transform: translateX(2px); }
+            80% { transform: translateX(-4px); }
+            100% { transform: translateX(0); }
+        }
+
+        @media (max-width: 768px) {
+            #main-message {
+                font-size: 10vw;
+            }
+            .contact-btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="crt-overlay"></div>
+    
+    <video class="tv-glitch" id="glitch-video" muted loop>
+        <source src="static/tv-static.mp4" type="video/mp4">
+    </video>
+
+    <h1 id="main-message">لا شيء هنا صدفة،<br> حتى وجودك..</h1>
+    
+    <div id="contact-buttons">
+        <button class="contact-btn" onclick="window.open('https://t.me/username')">تلجرام</button>
+        <button class="contact-btn" onclick="window.open('https://snapchat.com/add/username')">سناب شات</button>
+        <button class="contact-btn" onclick="window.open('https://instagram.com/username')">إنستقرام</button>
+    </div>
+
+    <script>
+        // تشغيل الفيديو العشوائي
+        function triggerGlitch() {
+            const video = document.getElementById('glitch-video');
+            video.classList.add('active');
+            video.play();
+            
+            setTimeout(() => {
+                video.classList.remove('active');
+                video.pause();
+            }, Math.random() * 3000 + 1000);
+        }
+
+        // بدء التجربة
+        setTimeout(() => {
+            document.getElementById('contact-buttons').style.display = 'flex';
+            document.getElementById('main-message').style.animation = 'none';
+            
+            // تشغيل تأثيرات عشوائية
+            setInterval(() => {
+                if(Math.random() > 0.7) triggerGlitch();
+            }, 8000);
+            
+            // أصوات خلفية
+            const audio = new Audio('static/white-noise.mp3');
+            audio.loop = true;
+            audio.volume = 0.2;
+            audio.play();
+        }, 5000);
+
+        // نصوص عشوائية تظهر وتختفي
+        setInterval(() => {
+            const texts = [
+                "01010100 01101000 01100101 00100000 01100001 01101110 01110011 01110111 01100101 01110010 00100000 01101001 01110011 00100000 00110010",
+                "خطأ في النظام...",
+                "ممنوع الدخول!",
+                "تحميل البيانات... فشل!"
+            ];
+            
+            const elem = document.createElement('div');
+            elem.style = `
+                position: fixed;
+                top: ${Math.random() * 90}%;
+                left: ${Math.random() * 90}%;
+                color: #0f0;
+                opacity: 0.7;
+                font-size: 1.2rem;
+                animation: fade 3s;
+            `;
+            elem.textContent = texts[Math.floor(Math.random() * texts.length)];
+            
+            document.body.appendChild(elem);
+            setTimeout(() => elem.remove(), 3000);
+        }, 5000);
+    </script>
+</body>
+</html>

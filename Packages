@@ -1,0 +1,14 @@
+Package: com.bandarhl.bhinsta
+Version: 1.0.3
+Architecture: iphoneos-arm64e
+Maintainer: 
+Description: com.bandarhl.bhinsta package for iOS
+Section: Tweaks
+Filename: ./debs/com.bandarhl.bhinsta_1.0.3_iphoneos-arm64e.deb
+Size: 161658
+Installed-Size: 157
+MD5sum: ffa3deb30dc4093b6f4ac33f4d47af39
+SHA1: 965c1a1d7f106dc0c0e3a451b7d2c8a03b7a75c3
+SHA256: 35a0fe03d14c5dc99c489c768c0e832a4834c2c239ea75c4240ad4cf4016122b
+Name: com.bandarhl.bhinsta
+
